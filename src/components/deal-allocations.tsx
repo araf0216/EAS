@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Download, Edit, Save, Plus, Trash2, AlertCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Fund, initialFunds, Operation } from "@/lib/definitions"
+import { Deal, Fund, initialFunds, Operation } from "@/lib/definitions"
 import {
   Dialog,
   DialogContent,
@@ -19,24 +19,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { operateData } from "@/lib/utils"
+import { dealStatusBadge, operateData } from "@/lib/utils"
 
 interface FundAllocationsProps {
   onFundsUpdate?: (funds: Fund[]) => void
 }
 
-export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
+export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [funds, setFunds] = useState<Fund[]>(initialFunds)
-  const [editingFund, setEditingFund] = useState<Fund | null>(null)
+  const [deals, setDeals] = useState<Deal[]>(operateData(Operation.Read, "deals") as Deal[])
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [fundToDelete, setFundToDelete] = useState<Fund | null>(null)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
-  // Form state for editing/adding funds
   const [formData, setFormData] = useState({
     name: "",
     aum: "",
@@ -44,26 +43,13 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     manager: "",
   })
 
-  const filteredFunds = funds.filter((fund) => {
+  const filteredDeals = deals.filter((deal) => {
     const matchesSearch =
-      fund.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fund.manager.toLowerCase().includes(searchTerm.toLowerCase())
+      deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.manager.toLowerCase().includes(searchTerm.toLowerCase())
     // const matchesStatus = statusFilter === "all" || fund.status === statusFilter
     return matchesSearch
   })
-
-  // const getStatusBadge = (status: Fund["status"]) => {
-  //   switch (status) {
-  //     case "Active":
-  //       return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
-  //     case "Inactive":
-  //       return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Inactive</Badge>
-  //     case "Pending":
-  //       return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>
-  //     default:
-  //       return <Badge variant="secondary">{status}</Badge>
-  //   }
-  // }
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000000) {
@@ -102,23 +88,23 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     return Number.parseFloat(value.replace(/,/g, "")) || 0
   }
 
-  const totalAUM = filteredFunds.reduce((sum, fund) => sum + fund.aum, 0)
+  const totalAUM = filteredDeals.reduce((sum, deal) => sum + deal.amount, 0)
   // const activeFunds = filteredFunds.filter((fund) => fund.status === "Active").length
 
-  const handleEditFund = (fund: Fund) => {
-    setEditingFund(fund)
+  const editDeal = (deal: Deal) => {
+    setEditingDeal(deal)
     setFormData({
-      name: fund.name,
-      aum: formatCurrencyInput(fund.aum.toString()),
+      name: deal.name,
+      aum: formatCurrencyInput(deal.amount.toString()),
       // status: fund.status,
-      manager: fund.manager,
+      manager: deal.manager,
     })
     setValidationErrors([])
     setEditDialogOpen(true)
   }
 
   const handleAddFund = () => {
-    setEditingFund(null)
+    setEditingDeal(null)
     setFormData({
       name: "",
       aum: "",
@@ -129,7 +115,7 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     setAddDialogOpen(true)
   }
 
-  const handleDeleteFund = (fund: Fund) => {
+  const deleteFund = (fund: Fund) => {
     setFundToDelete(fund)
     setDeleteDialogOpen(true)
   }
@@ -142,8 +128,8 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     if (!formData.manager.trim()) errors.push("Manager name is required")
 
     // Check for duplicate fund names (except when editing the same fund)
-    const existingFund = funds.find(
-      (fund) => fund.name.toLowerCase() === formData.name.toLowerCase() && fund.id !== editingFund?.id,
+    const existingFund = deals.find(
+      (fund) => fund.name.toLowerCase() === formData.name.toLowerCase() && fund.id !== editingDeal?.id,
     )
     if (existingFund) {
       errors.push("Fund name already exists")
@@ -158,64 +144,64 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     return errors
   }
 
-  const handleSaveFund = () => {
-    const errors = validateForm()
-    if (errors.length > 0) {
-      setValidationErrors(errors)
-      return
-    }
+  // const handleSaveFund = () => {
+  //   const errors = validateForm()
+  //   if (errors.length > 0) {
+  //     setValidationErrors(errors)
+  //     return
+  //   }
 
-    const aumValue = parseAUMValue(formData.aum)
-    const currentDate = new Date().toISOString().split("T")[0]
+  //   const aumValue = parseAUMValue(formData.aum)
+  //   const currentDate = new Date().toISOString().split("T")[0]
 
-    if (editingFund) {
-      // Update existing fund
-      const updatedFund: Fund = {
-        ...editingFund,
-        name: formData.name.trim(),
-        aum: aumValue,
-        // status: formData.status,
-        manager: formData.manager.trim(),
-        lastUpdated: currentDate,
-      }
+  //   if (editingDeal) {
+  //     // Update existing fund
+  //     const updatedFund: Fund = {
+  //       ...editingDeal,
+  //       name: formData.name.trim(),
+  //       aum: aumValue,
+  //       // status: formData.status,
+  //       manager: formData.manager.trim(),
+  //       lastUpdated: currentDate,
+  //     }
 
-      setFunds((prev) => prev.map((fund) => (fund.id === editingFund.id ? updatedFund : fund)))
-      setEditDialogOpen(false)
-    } else {
-      // Add new fund
-      const newFund: Fund = {
-        id: `fund-${Date.now()}`,
-        name: formData.name.trim(),
-        aum: aumValue,
-        // status: formData.status,
-        manager: formData.manager.trim(),
-        lastUpdated: currentDate,
-      }
+  //     setDeals((prev) => prev.map((fund) => (fund.id === editingDeal.id ? updatedFund : fund)))
+  //     setEditDialogOpen(false)
+  //   } else {
+  //     // Add new fund
+  //     const newFund: Fund = {
+  //       id: `fund-${Date.now()}`,
+  //       name: formData.name.trim(),
+  //       aum: aumValue,
+  //       // status: formData.status,
+  //       manager: formData.manager.trim(),
+  //       lastUpdated: currentDate,
+  //     }
 
-      setFunds((prev) => [...prev, newFund])
-      setAddDialogOpen(false)
-    }
+  //     setDeals((prev) => [...prev, newFund])
+  //     setAddDialogOpen(false)
+  //   }
 
-    // Call callback if provided
-    if (onFundsUpdate) {
-      onFundsUpdate(funds)
-    }
+  //   // Call callback if provided
+  //   if (onFundsUpdate) {
+  //     onFundsUpdate(deals)
+  //   }
 
-    setValidationErrors([])
-  }
+  //   setValidationErrors([])
+  // }
 
-  const confirmDeleteFund = () => {
-    if (fundToDelete) {
-      setFunds((prev) => prev.filter((fund) => fund.id !== fundToDelete.id))
-      setDeleteDialogOpen(false)
-      setFundToDelete(null)
+  // const confirmDeleteFund = () => {
+  //   if (fundToDelete) {
+  //     setDeals((prev) => prev.filter((fund) => fund.id !== fundToDelete.id))
+  //     setDeleteDialogOpen(false)
+  //     setFundToDelete(null)
 
-      // Call callback if provided
-      if (onFundsUpdate) {
-        onFundsUpdate(funds.filter((fund) => fund.id !== fundToDelete.id))
-      }
-    }
-  }
+  //     // Call callback if provided
+  //     if (onFundsUpdate) {
+  //       onFundsUpdate(deals.filter((fund) => fund.id !== fundToDelete.id))
+  //     }
+  //   }
+  // }
 
   const handleFormChange = (field: keyof typeof formData, value: string) => {
     if (field === "aum") {
@@ -230,15 +216,15 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fund Allocations</h1>
-          <p className="text-muted-foreground">Manage fund portfolios and AUM values</p>
+          <h1 className="text-3xl font-bold tracking-tight">Deal Allocations</h1>
+          <p className="text-muted-foreground">Manage investment deals and allocations</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleAddFund}>
+          <Button className="cursor-pointer" onClick={handleAddFund}>
             <Plus className="size-4 mr-2" />
             Add Fund
           </Button>
-          <Button variant="outline" className="cursor-pointer" onClick={() => operateData(Operation.Read, "funds")}>
+          <Button className="cursor-pointer" variant="outline">
             <Download className="size-4 mr-2" />
             Export Data
           </Button>
@@ -248,11 +234,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Funds</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Deals</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredFunds.length}</div>
-            <p className="text-xs text-muted-foreground">Managed funds</p>
+            <div className="text-2xl font-bold">{filteredDeals.length}</div>
+            <p className="text-xs text-muted-foreground">Managed deals</p>
           </CardContent>
         </Card>
         {/* <Card>
@@ -266,11 +252,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
         </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total AUM</CardTitle>
+            <CardTitle className="text-sm font-medium">Deals Total Amount</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalAUM)}</div>
-            <p className="text-xs text-muted-foreground">Assets under management</p>
+            <p className="text-xs text-muted-foreground">Total amount managed through deals</p>
           </CardContent>
         </Card>
       </div>
@@ -279,8 +265,8 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Fund Portfolio</CardTitle>
-              <CardDescription>View and manage all fund allocations and AUM values</CardDescription>
+              <CardTitle>Deal Portfolio</CardTitle>
+              <CardDescription>View and manage all investment deals and allocations</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -311,32 +297,33 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Fund Name</TableHead>
+                <TableHead>Deal Name</TableHead>
                 <TableHead>AUM</TableHead>
-                {/* <TableHead>Status</TableHead> */}
                 <TableHead>Manager</TableHead>
-                <TableHead>Last Updated</TableHead>
+                <TableHead>Status</TableHead>
+                {/* <TableHead>Last Updated</TableHead> */}
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredFunds.map((fund) => (
-                <TableRow key={fund.id}>
-                  <TableCell className="font-medium">{fund.name}</TableCell>
-                  <TableCell className="font-medium">{formatCurrency(fund.aum)}</TableCell>
-                  {/* <TableCell>{getStatusBadge(fund.status)}</TableCell> */}
-                  <TableCell>{fund.manager}</TableCell>
-                  <TableCell>{new Date(fund.lastUpdated).toLocaleDateString()}</TableCell>
+              {filteredDeals.map((deal) => (
+                <TableRow key={deal.id}>
+                  <TableCell className="font-medium">{deal.name}</TableCell>
+                  <TableCell className="font-medium">{formatCurrency(deal.amount)}</TableCell>
+                  <TableCell>{deal.manager}</TableCell>
+                  <TableCell>{dealStatusBadge(deal.status)}</TableCell>
+                  {/* <TableCell>{new Date(fund.lastUpdated).toLocaleDateString()}</TableCell> */}
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEditFund(fund)}>
+                      {/* <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => editFund(fund)}> */}
+                      <Button className="cursor-pointer" variant="ghost" size="sm">
                         <Edit className="size-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteFund(fund)}
-                        className="text-red-600 hover:text-red-700"
+                        // onClick={() => deleteFund(fund)}
+                        className="text-red-600 hover:text-red-700 cursor-pointer"
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -418,10 +405,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+            <Button className="cursor-pointer" variant="outline" onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSaveFund}>
+            {/* <Button className="cursor-pointer" onClick={handleSaveFund}> */}
+            <Button className="cursor-pointer">
               <Save className="size-4 mr-2" />
               Save Changes
             </Button>
@@ -498,10 +486,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+            <Button className="cursor-pointer" variant="outline" onClick={() => setAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSaveFund}>
+            {/* <Button className="cursor-pointer" onClick={handleSaveFund}> */}
+            <Button className="cursor-pointer">
               <Plus className="size-4 mr-2" />
               Add Fund
             </Button>
@@ -519,10 +508,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button className="cursor-pointer" variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDeleteFund}>
+            {/* <Button className="cursor-pointer" variant="destructive" onClick={confirmDeleteFund}> */}
+            <Button className="cursor-pointer" variant="destructive">
               <Trash2 className="size-4 mr-2" />
               Delete Fund
             </Button>

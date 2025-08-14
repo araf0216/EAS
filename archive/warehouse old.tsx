@@ -8,7 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Download, Eye, ArrowLeft, Check, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Status, ActivityType, Invoice, Fund, initialFunds, FundDetailed } from "@/lib/definitions"
 import {
   Dialog,
   DialogContent,
@@ -18,21 +17,109 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { statusBadge } from "@/lib/utils"
 
-const generateFunds = (invoiceTotal: number, funds: Fund[]): FundDetailed[] => {
+interface Invoice {
+  id: string
+  invoiceNumber: string
+  companyName: string
+  invoiceTotal: number
+  status: "Pending Approval" | "Approved" | "Rejected" | "Completed"
+  activityType: "Pending" | "Complete" | "Reimbursable" | "Deal Allocation" | "Out of FM"
+  receivedDate: string
+  dueDate: string
+}
+
+interface Fund {
+  id: string
+  name: string
+  aum: number
+  percentage: number
+  amountAllocated: number
+}
+
+const mockInvoices: Invoice[] = [
+  {
+    id: "1",
+    invoiceNumber: "INV-2024-001",
+    companyName: "Acme Corporation",
+    invoiceTotal: 15000,
+    status: "Completed",
+    activityType: "Complete",
+    receivedDate: "2024-01-15",
+    dueDate: "2024-02-15",
+  },
+  {
+    id: "2",
+    invoiceNumber: "INV-2024-002",
+    companyName: "Tech Solutions Inc",
+    invoiceTotal: 25000,
+    status: "Approved",
+    activityType: "Pending",
+    receivedDate: "2024-01-10",
+    dueDate: "2024-02-10",
+  },
+  {
+    id: "3",
+    invoiceNumber: "INV-2024-003",
+    companyName: "Research Partners LLC",
+    invoiceTotal: 8000,
+    status: "Completed",
+    activityType: "Reimbursable",
+    receivedDate: "2024-01-05",
+    dueDate: "2024-02-05",
+  },
+  {
+    id: "4",
+    invoiceNumber: "INV-2024-004",
+    companyName: "Learning Solutions",
+    invoiceTotal: 12000,
+    status: "Pending Approval",
+    activityType: "Pending",
+    receivedDate: "2024-01-20",
+    dueDate: "2024-02-20",
+  },
+  {
+    id: "5",
+    invoiceNumber: "INV-2024-005",
+    companyName: "Cloud Systems Ltd",
+    invoiceTotal: 30000,
+    status: "Rejected",
+    activityType: "Pending",
+    receivedDate: "2024-01-12",
+    dueDate: "2024-02-12",
+  },
+]
+
+// Fund data with military alphabet names
+const generateFunds = (invoiceTotal: number): Fund[] => {
+  console.log(invoiceTotal)
+
   const totalAUM = 4123000000 // $4.123B
+  const fundNames = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel"]
 
-  return funds.map((fund, index) => {
-    const id = fund.id
-    const name = fund.name
-    const aum = fund.aum
+  // Generate random AUM values that sum to totalAUM
+  const aumValues = [
+    850000000, // Alpha
+    720000000, // Bravo
+    650000000, // Charlie
+    580000000, // Delta
+    490000000, // Echo
+    420000000, // Foxtrot
+    250000000, // Golf
+    153000000, // Hotel
+  ]
+
+  return fundNames.map((name, index) => {
+    const aum = aumValues[index]
     const percentage = (aum / totalAUM) * 100
     const amountAllocated = (percentage / 100) * invoiceTotal
 
+    console.log(name)
+    console.log(amountAllocated)
+
     return {
-      id,
-      name,
+      id: `fund-${index + 1}`,
+      name: `Fund ${name}`,
       aum,
       percentage,
       amountAllocated,
@@ -48,13 +135,13 @@ interface WarehouseProps {
 export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: WarehouseProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [invoices, setInvoices] = useState<Invoice[]>(propInvoices!)
+  const [invoices, setInvoices] = useState<Invoice[]>(propInvoices || mockInvoices)
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
-  const [funds, setFunds] = useState<FundDetailed[]>([])
+  const [funds, setFunds] = useState<Fund[]>([])
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false)
   const [activityDialogOpen, setActivityDialogOpen] = useState(false)
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null)
-  const [selectedActivityType, setSelectedActivityType] = useState(ActivityType.Pending)
+  const [selectedActivityType, setSelectedActivityType] = useState<Invoice["activityType"]>("Pending")
 
   const filteredInvoices = invoices.filter((invoice) => {
     const matchesSearch =
@@ -64,17 +151,32 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
     return matchesSearch && matchesStatus
   })
 
+  const getStatusBadge = (status: Invoice["status"]) => {
+    switch (status) {
+      case "Pending Approval":
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending Approval</Badge>
+      case "Approved":
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Approved</Badge>
+      case "Completed":
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Completed</Badge>
+      case "Rejected":
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rejected</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
   const getActivityTypeBadge = (activityType: Invoice["activityType"]) => {
     switch (activityType) {
-      case ActivityType.Pending:
+      case "Pending":
         return <Badge variant="outline">Pending</Badge>
-      case ActivityType.Complete:
+      case "Complete":
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Complete</Badge>
-      case ActivityType.Reimb:
+      case "Reimbursable":
         return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Reimbursable</Badge>
-      case ActivityType.DealAlloc:
+      case "Deal Allocation":
         return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Deal Allocation</Badge>
-      case ActivityType.FM:
+      case "Out of FM":
         return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Out of FM</Badge>
       default:
         return <Badge variant="secondary">{activityType}</Badge>
@@ -85,25 +187,25 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
 
   const handleViewInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice)
-    setFunds(generateFunds(invoice.invoiceTotal, initialFunds))
+    setFunds(generateFunds(invoice.invoiceTotal))
   }
 
-  const returnWarehouse = () => {
+  const handleBackToWarehouse = () => {
     setSelectedInvoice(null)
     setFunds([])
   }
 
-  const updateApproval = (invoice: Invoice, action: Status.Approved | Status.Rejected) => {
+  const handleApprovalAction = (invoice: Invoice, action: "Approved" | "Rejected") => {
     const updatedInvoice = { ...invoice, status: action }
     updateInvoice(updatedInvoice)
     setApprovalDialogOpen(false)
   }
 
-  const updateActivity = (invoice: Invoice, activityType: ActivityType) => {
+  const handleActivityTypeUpdate = (invoice: Invoice, activityType: Invoice["activityType"]) => {
     const updatedInvoice = {
       ...invoice,
       activityType,
-      status: activityType === ActivityType.Pending ? Status.Approved : Status.Complete,
+      status: activityType === "Pending" ? "Approved" : "Completed",
     }
     updateInvoice(updatedInvoice)
     setActivityDialogOpen(false)
@@ -134,7 +236,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
       <div className="space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={returnWarehouse}>
+            <Button variant="outline" onClick={handleBackToWarehouse}>
               <ArrowLeft className="size-4 mr-2" />
               Back to Invoice Warehouse
             </Button>
@@ -233,7 +335,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                 </div>
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total Allocated:</span>
-                  <span>{formatCurrency(totalAllocated)}</span>
+                  <span>{totalInvoiceAmount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -304,7 +406,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-50">
+                <SelectTrigger className="w-40">
                   <Filter className="size-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -339,7 +441,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                   <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                   <TableCell>{invoice.companyName}</TableCell>
                   <TableCell>${invoice.invoiceTotal.toLocaleString()}</TableCell>
-                  <TableCell>{statusBadge(invoice.status)}</TableCell>
+                  <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                   <TableCell>{getActivityTypeBadge(invoice.activityType)}</TableCell>
                   <TableCell>{new Date(invoice.receivedDate).toLocaleDateString()}</TableCell>
                   <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
@@ -377,13 +479,13 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                             <DialogFooter>
                               <Button
                                 variant="outline"
-                                onClick={() => currentInvoice && updateApproval(currentInvoice, Status.Rejected)}
+                                onClick={() => currentInvoice && handleApprovalAction(currentInvoice, "Rejected")}
                               >
                                 <X className="size-4 mr-2" />
                                 Reject
                               </Button>
                               <Button
-                                onClick={() => currentInvoice && updateApproval(currentInvoice, Status.Approved)}
+                                onClick={() => currentInvoice && handleApprovalAction(currentInvoice, "Approved")}
                               >
                                 <Check className="size-4 mr-2" />
                                 Approve
@@ -407,8 +509,8 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
-                              <Select value={selectedActivityType === ActivityType.Pending ? undefined : selectedActivityType} onValueChange={(value) => setSelectedActivityType(value as ActivityType)}>
-                                <SelectTrigger className="w-[280px]">
+                              <Select value={selectedActivityType} onValueChange={setSelectedActivityType}>
+                                <SelectTrigger>
                                   <SelectValue placeholder="Select activity type" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -425,7 +527,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                               </Button>
                               <Button
                                 onClick={() =>
-                                  currentInvoice && updateActivity(currentInvoice, selectedActivityType)
+                                  currentInvoice && handleActivityTypeUpdate(currentInvoice, selectedActivityType)
                                 }
                               >
                                 Update

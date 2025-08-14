@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import { ActivityType, Invoice, Status } from "@/lib/definitions"
 
 interface UploadedFile {
   name: string
@@ -31,24 +32,24 @@ interface InvoiceData {
   totalAmount: string
 }
 
-interface Invoice {
-  id: string
-  invoiceNumber: string
-  companyName: string
-  invoiceTotal: number
-  status: "Pending Approval" | "Approved" | "Rejected" | "Completed"
-  activityType: "Pending" | "Complete" | "Reimbursable" | "Deal Allocation" | "Out of FM"
-  receivedDate: string
-  dueDate: string
-}
+// interface Invoice {
+//   id: string
+//   invoiceNumber: string
+//   companyName: string
+//   invoiceTotal: number
+//   status: "Pending Approval" | "Approved" | "Rejected" | "Completed"
+//   activityType: "Pending" | "Complete" | "Reimbursable" | "Deal Allocation" | "Out of FM"
+//   receivedDate: string
+//   dueDate: string
+// }
 
 interface NewInvoiceProps {
-  onInvoiceCreated?: (invoice: Invoice) => void
+  createInvoice?: (invoice: Invoice) => void
   existingInvoices?: Invoice[]
 }
 
-export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoiceProps) {
-  const [activeTab, setActiveTab] = useState("upload")
+export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceProps) {
+  const [activeTab, setActiveTab] = useState("manual")
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -238,15 +239,15 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
         invoiceNumber: invoiceData.invoiceNumber,
         companyName: invoiceData.companyName,
         invoiceTotal: Number.parseFloat(invoiceData.totalAmount.replace(/[^\d.]/g, "")),
-        status: "Pending Approval",
-        activityType: "Pending",
+        status: Status.PendingApproval,
+        activityType: ActivityType.Pending,
         receivedDate: invoiceData.receivedDate,
         dueDate: invoiceData.dueDate,
       }
 
       // Call the callback to add the invoice to the warehouse
-      if (onInvoiceCreated) {
-        onInvoiceCreated(newInvoice)
+      if (createInvoice) {
+        createInvoice(newInvoice)
       }
 
       // Reset form
@@ -296,13 +297,13 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="upload" className="flex items-center gap-2">
-            <Upload className="size-4" />
-            Invoice File Upload
-          </TabsTrigger>
           <TabsTrigger value="manual" className="flex items-center gap-2">
             <FileText className="size-4" />
             Manual Input
+          </TabsTrigger>
+          <TabsTrigger value="upload" className="flex items-center gap-2">
+            <Upload className="size-4" />
+            Invoice File Upload
           </TabsTrigger>
         </TabsList>
 
@@ -430,7 +431,7 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {receivedDate ? format(receivedDate, "PPP") : <span>Pick a date</span>}
+                          {receivedDate ? format(receivedDate, "PPP") : <span>Select Date</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -438,10 +439,7 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                           mode="single"
                           selected={receivedDate}
                           onSelect={(date) => handleDateChange("receivedDate", date)}
-                          initialFocus
-                          captionLayout="dropdown-buttons"
-                          fromYear={2020}
-                          toYear={2030}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -458,7 +456,7 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                          {dueDate ? format(dueDate, "PPP") : <span>Select Date</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -466,11 +464,8 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                           mode="single"
                           selected={dueDate}
                           onSelect={(date) => handleDateChange("dueDate", date)}
-                          initialFocus
-                          captionLayout="dropdown-buttons"
-                          fromYear={2020}
-                          toYear={2030}
                           disabled={(date) => (receivedDate ? date < receivedDate : false)}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -482,12 +477,8 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
 
           {uploadedFile && !isProcessing && (
             <div className="flex justify-end gap-4">
-              <Button variant="outline" onClick={handleSave}>
+              <Button onClick={handleSubmit} className="cursor-pointer">
                 <Save className="size-4 mr-2" />
-                Save Draft
-              </Button>
-              <Button onClick={handleSubmit}>
-                <Send className="size-4 mr-2" />
                 Save Invoice
               </Button>
             </div>
@@ -545,7 +536,7 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {receivedDate ? format(receivedDate, "PPP") : <span>Pick a date</span>}
+                        {receivedDate ? format(receivedDate, "PPP") : <span>Select Date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -553,10 +544,7 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                         mode="single"
                         selected={receivedDate}
                         onSelect={(date) => handleDateChange("receivedDate", date)}
-                        initialFocus
-                        captionLayout="dropdown-buttons"
-                        fromYear={2020}
-                        toYear={2030}
+                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>
@@ -573,7 +561,7 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                        {dueDate ? format(dueDate, "PPP") : <span>Select Date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -581,10 +569,33 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
                         mode="single"
                         selected={dueDate}
                         onSelect={(date) => handleDateChange("dueDate", date)}
-                        initialFocus
-                        captionLayout="dropdown-buttons"
-                        fromYear={2020}
-                        toYear={2030}
+                        captionLayout="dropdown"
+                        disabled={(date) => (receivedDate ? date < receivedDate : false)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label>Activity Type</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dueDate && "text-muted-foreground",
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dueDate ? format(dueDate, "PPP") : <span>Select Date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dueDate}
+                        onSelect={(date) => handleDateChange("dueDate", date)}
+                        captionLayout="dropdown"
                         disabled={(date) => (receivedDate ? date < receivedDate : false)}
                       />
                     </PopoverContent>
@@ -595,12 +606,13 @@ export function NewInvoice({ onInvoiceCreated, existingInvoices = [] }: NewInvoi
           </Card>
 
           <div className="flex justify-end gap-4">
-            <Button variant="outline" onClick={handleSave}>
+            {/* <Button variant="outline" onClick={handleSave}>
               <Save className="size-4 mr-2" />
               Save Draft
-            </Button>
-            <Button onClick={handleSubmit}>
-              <Send className="size-4 mr-2" />
+            </Button> */}
+            <Button onClick={handleSubmit} className="cursor-pointer">
+              {/* <Send className="size-4 mr-2" /> */}
+              <Save className="size-4 mr-2" />
               Save Invoice
             </Button>
           </div>

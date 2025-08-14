@@ -2,33 +2,43 @@
 
 import { useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { NewInvoice } from "@/components/new-invoice"
 import { Warehouse } from "@/components/warehouse"
 import { FundAllocations } from "@/components/fund-allocations"
-import { Invoice, Status } from "@/lib/definitions"
-import { DealAllocations } from "@/components/deal-allocations"
-import data from "@/lib/data.json"
+
+interface Invoice {
+  id: string
+  invoiceNumber: string
+  companyName: string
+  invoiceTotal: number
+  status: "Pending Approval" | "Approved" | "Rejected" | "Completed"
+  activityType: "Pending" | "Complete" | "Reimbursable" | "Deal Allocation" | "Out of FM"
+  receivedDate: string
+  dueDate: string
+}
 
 export default function Page() {
   const [activeView, setActiveView] = useState("new-invoice")
-  const [invoices, setInvoices] = useState<Invoice[]>(data.invoices as Invoice[])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
 
   const handleInvoiceCreated = (newInvoice: Invoice) => {
-    // check for existing rejected invoice number
+    // Check if there's an existing rejected invoice with the same number
     const existingRejectedIndex = invoices.findIndex(
-      (inv) => inv.invoiceNumber === newInvoice.invoiceNumber && inv.status === Status.Rejected,
+      (inv) => inv.invoiceNumber === newInvoice.invoiceNumber && inv.status === "Rejected",
     )
 
     if (existingRejectedIndex !== -1) {
-      // replace rejected invoice
+      // Replace the rejected invoice
       setInvoices((prev) => prev.map((inv, index) => (index === existingRejectedIndex ? newInvoice : inv)))
     } else {
-      // add new invoice
+      // Add new invoice
       setInvoices((prev) => [...prev, newInvoice])
     }
 
-    setActiveView("allocations")
+    setActiveView("allocations") // Switch to warehouse view to show the new invoice
   }
 
   const handleInvoiceUpdate = (updatedInvoice: Invoice) => {
@@ -43,8 +53,6 @@ export default function Page() {
         return <Warehouse invoices={invoices} onInvoiceUpdate={handleInvoiceUpdate} />
       case "fund-allocations":
         return <FundAllocations />
-      case "deal-allocations":
-        return <DealAllocations />
       default:
         return <NewInvoice createInvoice={handleInvoiceCreated} existingInvoices={invoices} />
     }
@@ -58,8 +66,6 @@ export default function Page() {
         return "Invoice Warehouse"
       case "fund-allocations":
         return "Fund Allocations"
-      case "deal-allocations":
-        return "Deal Allocations"
       default:
         return "New Invoice"
     }
