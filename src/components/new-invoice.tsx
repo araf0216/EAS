@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,9 +13,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Upload, FileText, X, CheckCircle, Save, Send, CalendarIcon, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { cn } from "@/lib/utils"
+import { cn, operateData } from "@/lib/utils"
 import { format } from "date-fns"
-import { ActivityType, Invoice, Status } from "@/lib/definitions"
+import { ActivityType, Deal, Invoice, Operation, Status } from "@/lib/definitions"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select"
 
 interface UploadedFile {
   name: string
@@ -30,23 +31,16 @@ interface InvoiceData {
   receivedDate: string
   dueDate: string
   totalAmount: string
+  activityType: ActivityType
+  dealId?: string
 }
-
-// interface Invoice {
-//   id: string
-//   invoiceNumber: string
-//   companyName: string
-//   invoiceTotal: number
-//   status: "Pending Approval" | "Approved" | "Rejected" | "Completed"
-//   activityType: "Pending" | "Complete" | "Reimbursable" | "Deal Allocation" | "Out of FM"
-//   receivedDate: string
-//   dueDate: string
-// }
 
 interface NewInvoiceProps {
   createInvoice?: (invoice: Invoice) => void
   existingInvoices?: Invoice[]
 }
+
+const deals: Deal[] = operateData(Operation.Read, "deals") as Deal[]
 
 export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceProps) {
   const [activeTab, setActiveTab] = useState("manual")
@@ -56,14 +50,14 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
   const [receivedDate, setReceivedDate] = useState<Date>()
   const [dueDate, setDueDate] = useState<Date>()
   const [validationErrors, setValidationErrors] = useState<string[]>([])
-
-  // Form data for both tabs
   const [invoiceData, setInvoiceData] = useState<InvoiceData>({
     invoiceNumber: "",
     companyName: "",
     receivedDate: "",
     dueDate: "",
     totalAmount: "",
+    activityType: ActivityType.Pending,
+    dealId: undefined
   })
 
   // File upload handlers
@@ -89,6 +83,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
         receivedDate: "2024-01-15",
         dueDate: "2024-02-15",
         totalAmount: "1250.00",
+        activityType: ActivityType.Complete
       })
       setReceivedDate(extractedReceivedDate)
       setDueDate(extractedDueDate)
@@ -130,6 +125,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
       receivedDate: "",
       dueDate: "",
       totalAmount: "",
+      activityType: ActivityType.Pending
     })
     setReceivedDate(undefined)
     setDueDate(undefined)
@@ -151,6 +147,29 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
     }))
     // Clear validation errors when user starts typing
     setValidationErrors([])
+  }
+
+  const setInvoiceActivity = (value: ActivityType) => {
+    if (value === invoiceData.activityType) {
+      console.log("resetting activityType")
+      setInvoiceData((form) => ({
+        ...form,
+        activityType: ActivityType.Pending
+      }))
+    } else {
+      console.log("setting activityType " + value)
+      setInvoiceData((form) => ({
+        ...form,
+        activityType: value
+      }))
+    }
+  }
+
+  const setInvoiceDeal = (value: string) => {
+    setInvoiceData((form) => ({
+      ...form,
+      dealId: value
+    }))
   }
 
   const formatCurrency = (value: string) => {
@@ -202,6 +221,8 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
     if (!invoiceData.receivedDate) errors.push("Received date is required")
     if (!invoiceData.dueDate) errors.push("Due date is required")
     if (!invoiceData.totalAmount) errors.push("Total amount is required")
+    if (invoiceData.activityType === ActivityType.Pending) errors.push("Activity type is required")
+    if (invoiceData.activityType === ActivityType.DealAlloc && !invoiceData.dealId) errors.push("Activity type is required")
 
     // Check if due date is before received date
     if (receivedDate && dueDate && dueDate < receivedDate) {
@@ -240,9 +261,10 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
         companyName: invoiceData.companyName,
         invoiceTotal: Number.parseFloat(invoiceData.totalAmount.replace(/[^\d.]/g, "")),
         status: Status.PendingApproval,
-        activityType: ActivityType.Pending,
+        activityType: invoiceData.activityType,
         receivedDate: invoiceData.receivedDate,
         dueDate: invoiceData.dueDate,
+        ...(invoiceData.dealId && {dealId: invoiceData.dealId})
       }
 
       // Call the callback to add the invoice to the warehouse
@@ -257,6 +279,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
         receivedDate: "",
         dueDate: "",
         totalAmount: "",
+        activityType: ActivityType.Pending
       })
       setReceivedDate(undefined)
       setDueDate(undefined)
@@ -271,13 +294,13 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 text-lg">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Invoice</h1>
+          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">New Invoice</h1>
           <p className="text-muted-foreground">Upload an invoice file or enter details manually</p>
         </div>
-        <Badge variant="secondary" className="text-sm">
+        <Badge variant="secondary" className="text-sm sm:text-xs">
           Draft
         </Badge>
       </div>
@@ -296,16 +319,191 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="manual" className="flex items-center gap-2">
-            <FileText className="size-4" />
+        <TabsList className="grid w-full grid-cols-2 h-fit">
+          <TabsTrigger value="manual" className="flex items-center gap-2 text-base sm:text-sm">
+            <FileText className="size-5 sm:size-4" />
             Manual Input
           </TabsTrigger>
-          <TabsTrigger value="upload" className="flex items-center gap-2">
-            <Upload className="size-4" />
+          <TabsTrigger value="upload" className="flex items-center gap-2 text-base sm:text-sm">
+            <Upload className="size-5 sm:size-4" />
             Invoice File Upload
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="manual" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle className="text-xl sm:text-lg">Invoice Information</CardTitle>
+                <CardDescription className="text-base sm:text-sm">Enter the essential invoice details manually</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="manual-invoice" className="text-base sm:text-sm">Invoice Number</Label>
+                  <Input
+                    id="manual-invoice"
+                    value={invoiceData.invoiceNumber}
+                    onChange={(e) => handleInputChange("invoiceNumber", e.target.value)}
+                    placeholder="Enter invoice number"
+                    className="sm:text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="manual-company" className="text-base sm:text-sm">Company Name</Label>
+                  <Input
+                    id="manual-company"
+                    value={invoiceData.companyName}
+                    onChange={(e) => handleInputChange("companyName", e.target.value)}
+                    placeholder="Enter company name"
+                    className="sm:text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="manual-total" className="text-base sm:text-sm">Total Amount</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground sm:text-sm">$</span>
+                    <Input
+                      id="manual-total"
+                      value={invoiceData.totalAmount}
+                      onChange={(e) => handleCurrencyChange(e.target.value)}
+                      placeholder="0.00"
+                      className="pl-8 sm:text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-base sm:text-sm">Received Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !receivedDate && "text-muted-foreground",
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 size-4" />
+                        <span className="text-base sm:text-sm">{receivedDate ? format(receivedDate, "PPP") : "Select Date"}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={receivedDate}
+                        onSelect={(date) => handleDateChange("receivedDate", date)}
+                        captionLayout="dropdown"
+                        // components={{
+                        //   YearsDropdown: ({ value, onChange, options, ...props }) => {
+                        //     // const options = React.Children.toArray(children) as React.ReactElement[]
+
+                        //     return (
+                        //       <Select
+                        //         value={value?.toString()}
+                        //         onValueChange={(newValue) => {
+                        //           const changeEvent = {
+                        //             target: { value: newValue }
+                        //           } as React.ChangeEvent<HTMLSelectElement>
+                        //           onChange?.(changeEvent)
+                        //         }}
+                        //       >
+                        //         <SelectTrigger className="w-32 h-8">
+                        //           <SelectValue />
+                        //         </SelectTrigger>
+                        //         <SelectContent>
+                        //           {options?.map((option, index) => (
+                        //             <SelectItem
+                        //               key={option.value}
+                        //               value={option.value.toString()}
+                        //               className="hover:bg-blue-50 focus:bg-blue-100 cursor-pointer"
+                        //             >
+                        //               {option.label}
+                        //             </SelectItem>
+                        //           ))}
+                        //         </SelectContent>
+                        //       </Select>
+                        //     )
+                        //   }
+                        // }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-base sm:text-sm">Due Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dueDate && "text-muted-foreground",
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 size-4" />
+                        <span className="text-base sm:text-sm">{dueDate ? format(dueDate, "PPP") : "Select Date"}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dueDate}
+                        onSelect={(date) => handleDateChange("dueDate", date)}
+                        captionLayout="dropdown"
+                        disabled={(date) => (receivedDate ? date < receivedDate : false)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-base sm:text-sm">Activity Type</Label>
+                  <Select value={invoiceData.activityType !== ActivityType.Pending ? invoiceData.activityType : undefined} onValueChange={(value) => setInvoiceActivity(value as ActivityType)}>
+                    <SelectTrigger className="w-full text-base sm:text-sm">
+                      <SelectValue placeholder="Select activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Activity Types</SelectLabel>
+                        {Object.values(ActivityType).filter((activity) => activity !== ActivityType.Pending).map((activity) => (
+                          <SelectItem key={activity} value={activity}>{activity}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {invoiceData.activityType === ActivityType.DealAlloc && (<div className="space-y-2">
+                  <Label className="text-base sm:text-sm">Deal Involved</Label>
+                  <Select value={invoiceData.dealId} onValueChange={setInvoiceDeal}>
+                    <SelectTrigger className="w-full text-base sm:text-sm">
+                      <SelectValue placeholder="Select deal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Deals</SelectLabel>
+                        {Object.values(deals).map((deal) => (
+                          <SelectItem key={deal.id} value={deal.id}>{deal.name}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end gap-4">
+            {/* <Button variant="outline" onClick={handleSave}>
+              <Save className="size-4 mr-2" />
+              Save Draft
+            </Button> */}
+            <Button onClick={handleSubmit} className="cursor-pointer text-base sm:text-sm">
+              {/* <Send className="size-4 mr-2" /> */}
+              <Save className="size-5 sm:size-4 mr-2" />
+              Save Invoice
+            </Button>
+          </div>
+        </TabsContent>
 
         <TabsContent value="upload" className="space-y-6">
           <Card>
@@ -484,149 +682,16 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
             </div>
           )}
         </TabsContent>
-
-        <TabsContent value="manual" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Invoice Information</CardTitle>
-              <CardDescription>Enter the essential invoice details manually</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="manual-invoice">Invoice Number</Label>
-                  <Input
-                    id="manual-invoice"
-                    value={invoiceData.invoiceNumber}
-                    onChange={(e) => handleInputChange("invoiceNumber", e.target.value)}
-                    placeholder="Enter invoice number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="manual-company">Company Name</Label>
-                  <Input
-                    id="manual-company"
-                    value={invoiceData.companyName}
-                    onChange={(e) => handleInputChange("companyName", e.target.value)}
-                    placeholder="Enter company name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="manual-total">Total Amount</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">$</span>
-                    <Input
-                      id="manual-total"
-                      value={invoiceData.totalAmount}
-                      onChange={(e) => handleCurrencyChange(e.target.value)}
-                      placeholder="0.00"
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Received Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !receivedDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {receivedDate ? format(receivedDate, "PPP") : <span>Select Date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={receivedDate}
-                        onSelect={(date) => handleDateChange("receivedDate", date)}
-                        captionLayout="dropdown"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-2">
-                  <Label>Due Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !dueDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dueDate ? format(dueDate, "PPP") : <span>Select Date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dueDate}
-                        onSelect={(date) => handleDateChange("dueDate", date)}
-                        captionLayout="dropdown"
-                        disabled={(date) => (receivedDate ? date < receivedDate : false)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-2">
-                  <Label>Activity Type</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !dueDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dueDate ? format(dueDate, "PPP") : <span>Select Date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dueDate}
-                        onSelect={(date) => handleDateChange("dueDate", date)}
-                        captionLayout="dropdown"
-                        disabled={(date) => (receivedDate ? date < receivedDate : false)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end gap-4">
-            {/* <Button variant="outline" onClick={handleSave}>
-              <Save className="size-4 mr-2" />
-              Save Draft
-            </Button> */}
-            <Button onClick={handleSubmit} className="cursor-pointer">
-              {/* <Send className="size-4 mr-2" /> */}
-              <Save className="size-4 mr-2" />
-              Save Invoice
-            </Button>
-          </div>
-        </TabsContent>
       </Tabs>
 
       {/* Summary Card */}
       {isFormValid() && (
         <Card className="bg-muted/50">
           <CardHeader>
-            <CardTitle className="text-lg">Invoice Summary</CardTitle>
+            <CardTitle className="text-xl">Invoice Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-base">
               <div>
                 <p className="text-muted-foreground">Invoice #</p>
                 <p className="font-medium">{invoiceData.invoiceNumber}</p>
@@ -651,6 +716,16 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                 <p className="text-muted-foreground">Due</p>
                 <p className="font-medium">{dueDate ? format(dueDate, "PPP") : invoiceData.dueDate}</p>
               </div>
+              <div>
+                <p className="text-muted-foreground">Activity Type</p>
+                <p className="font-medium">{invoiceData.activityType}</p>
+              </div>
+              {invoiceData.activityType === ActivityType.DealAlloc && invoiceData.dealId && (
+                <div>
+                  <p className="text-muted-foreground">Deal</p>
+                  <p className="font-medium">{deals.find(deal => deal.id === invoiceData.dealId)?.name}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

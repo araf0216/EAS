@@ -55,7 +55,7 @@ export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
           </div>
           <div className="flex flex-col gap-0.5 leading-none">
             <span className="font-semibold text-primary">Mountain EAS</span>
-            <span className="text-s text-foreground/70">Allocation Tracker</span>
+            <span className="text-sm text-foreground/70">Allocation Tracker</span>
           </div>
         </div>
       </SidebarHeader>
@@ -69,14 +69,14 @@ export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
                     size="lg"
                     onClick={() => setActiveView(item.id)}
                     isActive={activeView === item.id}
-                    className="w-full justify-start"
+                    className="w-full justify-start cursor-pointer"
                   >
                     <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-sidebar-foreground text-sidebar-accent">
                       <item.icon className="size-5" />
                     </div>
                     <div className="flex flex-col items-start">
-                      <span className="text-s font-semibold text-primary">{item.title}</span>
-                      <span className="text-s text-foreground/70">{item.description}</span>
+                      <span className="text-base sm:text-sm font-semibold text-primary">{item.title}</span>
+                      <span className="text-sm sm:text-xs text-foreground/70">{item.description}</span>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

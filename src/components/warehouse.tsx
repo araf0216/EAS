@@ -5,10 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Download, Eye, ArrowLeft, Check, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Status, ActivityType, Invoice, Fund, initialFunds, FundDetailed } from "@/lib/definitions"
+import { Status, ActivityType, Invoice, Fund, FundDetailed, Operation, DealFund, Deal } from "@/lib/definitions"
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { statusBadge } from "@/lib/utils"
+import { statusBadge, activityTypeBadge, operateData } from "@/lib/utils"
+
+const allFunds: Fund[] = operateData(Operation.Read, "funds") as Fund[]
+const deals: Deal[] = operateData(Operation.Read, "deals") as Deal[]
 
 const generateFunds = (invoiceTotal: number, funds: Fund[]): FundDetailed[] => {
   const totalAUM = 4123000000 // $4.123B
@@ -29,6 +31,33 @@ const generateFunds = (invoiceTotal: number, funds: Fund[]): FundDetailed[] => {
     const aum = fund.aum
     const percentage = (aum / totalAUM) * 100
     const amountAllocated = (percentage / 100) * invoiceTotal
+
+    console.log(amountAllocated)
+
+    return {
+      id,
+      name,
+      aum,
+      percentage,
+      amountAllocated,
+    }
+  })
+}
+
+const generateDealFunds = (invoiceTotal: number, totalDealAUM: number, funds: DealFund[]): FundDetailed[] => {
+  // const totalAUM = 4123000000 // $4.123B
+
+  return funds.map((dealFund, index) => {
+    const fund: Fund = allFunds.find(curFund => curFund.id === dealFund.fundId)!
+
+    const id = fund.id
+    const name = fund.name
+    const aum = dealFund.fundAmount
+    const percentage = (aum / totalDealAUM) * 100
+    const amountAllocated = (percentage / 100) * invoiceTotal
+
+    // console.log(percentage)
+    // console.log(amountAllocated)
 
     return {
       id,
@@ -55,6 +84,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
   const [activityDialogOpen, setActivityDialogOpen] = useState(false)
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null)
   const [selectedActivityType, setSelectedActivityType] = useState(ActivityType.Pending)
+  const [invoiceDeal, setInvoiceDeal] = useState<Deal | null>(null)
 
   const filteredInvoices = invoices.filter((invoice) => {
     const matchesSearch =
@@ -64,28 +94,20 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
     return matchesSearch && matchesStatus
   })
 
-  const getActivityTypeBadge = (activityType: Invoice["activityType"]) => {
-    switch (activityType) {
-      case ActivityType.Pending:
-        return <Badge variant="outline">Pending</Badge>
-      case ActivityType.Complete:
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Complete</Badge>
-      case ActivityType.Reimb:
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Reimbursable</Badge>
-      case ActivityType.DealAlloc:
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Deal Allocation</Badge>
-      case ActivityType.FM:
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Out of FM</Badge>
-      default:
-        return <Badge variant="secondary">{activityType}</Badge>
-    }
-  }
-
   const totalInvoiceAmount = filteredInvoices.reduce((sum, invoice) => sum + invoice.invoiceTotal, 0)
 
   const handleViewInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice)
-    setFunds(generateFunds(invoice.invoiceTotal, initialFunds))
+    console.log(invoice.dealId)
+    if (invoice.activityType === ActivityType.DealAlloc) {
+      console.log("deal invoice selected")
+      const deal: Deal = deals.find(deal => deal.id === invoice.dealId)!
+      setInvoiceDeal(deal)
+      setFunds(generateDealFunds(invoice.invoiceTotal, deal.amount, deal.funds))
+    } else {
+      console.log("regular invoice selected")
+      setFunds(generateFunds(invoice.invoiceTotal, allFunds))
+    }
   }
 
   const returnWarehouse = () => {
@@ -116,7 +138,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number, full: boolean = false) => {
     if (amount >= 1000000000) {
       return `$${(amount / 1000000000).toFixed(3)}B`
     } else if (amount >= 1000000) {
@@ -127,24 +149,25 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
   }
 
   if (selectedInvoice) {
+
     const totalFundAUM = funds.reduce((sum, fund) => sum + fund.aum, 0)
     const totalAllocated = funds.reduce((sum, fund) => sum + fund.amountAllocated, 0)
 
     return (
       <div className="space-y-6 p-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={returnWarehouse} className="text-base sm:text-sm cursor-pointer">
+            <ArrowLeft className="size-5 sm:size-4" />
+            Back to Invoice Warehouse
+          </Button>
+        </div>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={returnWarehouse}>
-              <ArrowLeft className="size-4 mr-2" />
-              Back to Invoice Warehouse
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Allocation Table</h1>
-              <p className="text-muted-foreground">Detailed fund allocations for {selectedInvoice.invoiceNumber}</p>
-            </div>
+          <div>
+            <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Allocation Table</h1>
+            <p className="text-muted-foreground">Detailed fund allocations for {selectedInvoice.invoiceNumber}</p>
           </div>
-          <Button>
-            <Download className="size-4 mr-2" />
+          <Button className="text-base sm:text-sm cursor-pointer">
+            <Download className="size-5 sm:size-4 mr-1" />
             Export Allocations
           </Button>
         </div>
@@ -152,53 +175,54 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Invoice Total</CardTitle>
+              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Invoice Total</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(selectedInvoice.invoiceTotal)}</div>
-              <p className="text-xs text-muted-foreground">Total invoice amount</p>
+              <div className="text-3xl sm:text-xl font-bold">{formatCurrency(selectedInvoice.invoiceTotal)}</div>
+              <p className="text-sm sm:text-xs text-muted-foreground">Total invoice amount</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Company</CardTitle>
+              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Company</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{selectedInvoice.companyName}</div>
-              <p className="text-xs text-muted-foreground">Invoice issuer</p>
+              <div className="text-3xl sm:text-xl font-bold">{selectedInvoice.companyName}</div>
+              <p className="text-sm sm:text-xs text-muted-foreground">Invoice issuer</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Received Date</CardTitle>
+              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Received Date</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{new Date(selectedInvoice.receivedDate).toLocaleDateString()}</div>
-              <p className="text-xs text-muted-foreground">Date received</p>
+              <div className="text-3xl sm:text-xl font-bold">{new Date(selectedInvoice.receivedDate).toLocaleDateString()}</div>
+              <p className="text-sm sm:text-xs text-muted-foreground">Date received</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Due Date</CardTitle>
+              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Due Date</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{new Date(selectedInvoice.dueDate).toLocaleDateString()}</div>
-              <p className="text-xs text-muted-foreground">Payment due</p>
+              <div className="text-3xl sm:text-xl font-bold">{new Date(selectedInvoice.dueDate).toLocaleDateString()}</div>
+              <p className="text-sm sm:text-xs text-muted-foreground">Payment due</p>
             </CardContent>
           </Card>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Fund Allocations</CardTitle>
-            <CardDescription>Breakdown of allocations across all funds</CardDescription>
+            <CardTitle className="text-xl sm:text-lg -mb-1">Fund Allocations</CardTitle>
+            <CardDescription className="text-base sm:text-sm">Breakdown of allocations across all funds</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table className="text-base sm:text-sm">
               <TableHeader>
                 <TableRow>
                   <TableHead>Fund</TableHead>
                   <TableHead>AUM</TableHead>
+                  {/* <TableHead>Percentage <Eye className="size-5"/></TableHead> */}
                   <TableHead>Percentage</TableHead>
                   <TableHead>Amount Allocated</TableHead>
                 </TableRow>
@@ -207,16 +231,16 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                 {funds.map((fund) => (
                   <TableRow key={fund.id}>
                     <TableCell className="font-medium">{fund.name}</TableCell>
-                    <TableCell>{formatCurrency(fund.aum)}</TableCell>
+                    <TableCell className="font-medium">{formatCurrency(fund.aum)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-3 sm:h-2">
                           <div
-                            className="bg-blue-600 h-2 rounded-full"
+                            className="bg-blue-600 h-3 sm:h-2 rounded-full"
                             style={{ width: `${Math.min(fund.percentage, 100)}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm">{fund.percentage.toFixed(3)}%</span>
+                        <span className="text-base sm:text-sm">{fund.percentage.toFixed(3)}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{formatCurrency(fund.amountAllocated)}</TableCell>
@@ -226,12 +250,12 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
             </Table>
 
             <div className="flex justify-end mt-6 pt-4 border-t">
-              <div className="w-64 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Total AUM:</span>
-                  <span>$4.123B</span>
+              <div className="w-fit space-y-2">
+                <div className="flex justify-between text-base sm:text-sm">
+                  <span>Total {invoiceDeal !== null ? "Deal" : ""} AUM:</span>
+                  <span>{invoiceDeal !== null ? formatCurrency(invoiceDeal.amount) : "$4.123B"}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg">
+                <div className="flex justify-between font-semibold text-lg sm:text-base gap-4">
                   <span>Total Allocated:</span>
                   <span>{formatCurrency(totalAllocated)}</span>
                 </div>
@@ -247,11 +271,11 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Invoice Warehouse</h1>
+          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Invoice Warehouse</h1>
           <p className="text-muted-foreground">Manage and track invoices across the warehouse</p>
         </div>
-        <Button>
-          <Download className="size-4 mr-2" />
+        <Button className="text-base sm:text-sm">
+          <Download className="size-5 sm:size-4 mr-1" />
           Export Data
         </Button>
       </div>
@@ -259,29 +283,29 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total Invoices</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredInvoices.length}</div>
-            <p className="text-xs text-muted-foreground">Active invoices</p>
+            <div className="text-3xl sm:text-2xl font-bold">{filteredInvoices.length}</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Active invoices</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total AUM</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total AUM</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$4.123B</div>
-            <p className="text-xs text-muted-foreground">Assets under management</p>
+            <div className="text-3xl sm:text-2xl font-bold">$4.123B</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Assets under management</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Invoice Total</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Invoice Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalInvoiceAmount.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Total invoice amount</p>
+            <div className="text-3xl sm:text-2xl font-bold">${totalInvoiceAmount.toLocaleString()}</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Total invoice amount</p>
           </CardContent>
         </Card>
       </div>
@@ -290,8 +314,8 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Invoice Warehouse</CardTitle>
-              <CardDescription>View and manage all invoices in the warehouse</CardDescription>
+              <CardTitle className="text-xl sm:text-lg">Invoice Warehouse</CardTitle>
+              <CardDescription className="text-base sm:text-sm">View and manage all invoices in the warehouse</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -310,17 +334,17 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Rejected">Rejected</SelectItem>
                   <SelectItem value="Pending Approval">Pending Approval</SelectItem>
                   <SelectItem value="Approved">Approved</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="text-base sm:text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Invoice Number</TableHead>
@@ -330,7 +354,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                 <TableHead>Activity Type</TableHead>
                 <TableHead>Received Date</TableHead>
                 <TableHead>Due Date</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -338,13 +362,13 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                 <TableRow key={invoice.id}>
                   <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                   <TableCell>{invoice.companyName}</TableCell>
-                  <TableCell>${invoice.invoiceTotal.toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">${invoice.invoiceTotal.toLocaleString()}</TableCell>
                   <TableCell>{statusBadge(invoice.status)}</TableCell>
-                  <TableCell>{getActivityTypeBadge(invoice.activityType)}</TableCell>
+                  <TableCell>{activityTypeBadge(invoice.activityType)}</TableCell>
                   <TableCell>{new Date(invoice.receivedDate).toLocaleDateString()}</TableCell>
                   <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-start gap-2">
                       <Button variant="ghost" size="sm" onClick={() => handleViewInvoice(invoice)}>
                         <Eye className="size-4" />
                       </Button>

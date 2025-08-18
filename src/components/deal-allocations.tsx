@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Download, Edit, Save, Plus, Trash2, AlertCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Deal, Fund, initialFunds, Operation } from "@/lib/definitions"
+import { Deal, Fund, Operation } from "@/lib/definitions"
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,8 @@ import { dealStatusBadge, operateData } from "@/lib/utils"
 interface FundAllocationsProps {
   onFundsUpdate?: (funds: Fund[]) => void
 }
+
+const initialFunds: Fund[] = operateData(Operation.Read, "funds") as Fund[]
 
 export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
   const [searchTerm, setSearchTerm] = useState("")
@@ -103,7 +105,7 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
     setEditDialogOpen(true)
   }
 
-  const handleAddFund = () => {
+  const handleAddDeal = () => {
     setEditingDeal(null)
     setFormData({
       name: "",
@@ -216,16 +218,16 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Deal Allocations</h1>
+          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Deal Allocations</h1>
           <p className="text-muted-foreground">Manage investment deals and allocations</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="cursor-pointer" onClick={handleAddFund}>
-            <Plus className="size-4 mr-2" />
-            Add Fund
+          <Button className="cursor-pointer text-base sm:text-sm" onClick={handleAddDeal}>
+            <Plus className="size-5 sm:size-4 mr-2" />
+            Add Deal
           </Button>
-          <Button className="cursor-pointer" variant="outline">
-            <Download className="size-4 mr-2" />
+          <Button className="cursor-pointer text-base sm:text-sm" variant="outline">
+            <Download className="size-5 sm:size-4 mr-2" />
             Export Data
           </Button>
         </div>
@@ -234,11 +236,11 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Deals</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total Deals</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredDeals.length}</div>
-            <p className="text-xs text-muted-foreground">Managed deals</p>
+            <div className="text-3xl sm:text-2xl font-bold">{filteredDeals.length}</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Managed deals</p>
           </CardContent>
         </Card>
         {/* <Card>
@@ -252,11 +254,11 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
         </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Deals Total Amount</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Deals Total Amount</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalAUM)}</div>
-            <p className="text-xs text-muted-foreground">Total amount managed through deals</p>
+            <div className="text-3xl sm:text-2xl font-bold">{formatCurrency(totalAUM)}</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Total amount managed through deals</p>
           </CardContent>
         </Card>
       </div>
@@ -265,8 +267,8 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Deal Portfolio</CardTitle>
-              <CardDescription>View and manage all investment deals and allocations</CardDescription>
+              <CardTitle className="text-lg">Deal Portfolio</CardTitle>
+              <CardDescription className="text-base sm:text-sm">View and manage all investment deals and allocations</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -294,14 +296,14 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="text-base sm:text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Deal Name</TableHead>
                 <TableHead>AUM</TableHead>
                 <TableHead>Manager</TableHead>
                 <TableHead>Status</TableHead>
-                {/* <TableHead>Last Updated</TableHead> */}
+                <TableHead>Funds</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -312,10 +314,9 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
                   <TableCell className="font-medium">{formatCurrency(deal.amount)}</TableCell>
                   <TableCell>{deal.manager}</TableCell>
                   <TableCell>{dealStatusBadge(deal.status)}</TableCell>
-                  {/* <TableCell>{new Date(fund.lastUpdated).toLocaleDateString()}</TableCell> */}
+                  <TableCell><Badge variant="outline" className="text-sm sm:text-xs">{deal.funds.length} Fund{deal.funds.length > 1 ? "s" : ""}</Badge></TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
-                      {/* <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => editFund(fund)}> */}
                       <Button className="cursor-pointer" variant="ghost" size="sm">
                         <Edit className="size-4" />
                       </Button>

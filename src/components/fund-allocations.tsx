@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Download, Edit, Save, Plus, Trash2, AlertCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Fund, initialFunds, Operation } from "@/lib/definitions"
+import { Fund, Operation } from "@/lib/definitions"
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,8 @@ import { operateData } from "@/lib/utils"
 interface FundAllocationsProps {
   onFundsUpdate?: (funds: Fund[]) => void
 }
+
+const initialFunds: Fund[] = operateData(Operation.Read, "funds") as Fund[]
 
 export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
   const [searchTerm, setSearchTerm] = useState("")
@@ -51,19 +53,6 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     // const matchesStatus = statusFilter === "all" || fund.status === statusFilter
     return matchesSearch
   })
-
-  // const getStatusBadge = (status: Fund["status"]) => {
-  //   switch (status) {
-  //     case "Active":
-  //       return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
-  //     case "Inactive":
-  //       return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Inactive</Badge>
-  //     case "Pending":
-  //       return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>
-  //     default:
-  //       return <Badge variant="secondary">{status}</Badge>
-  //   }
-  // }
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000000) {
@@ -230,16 +219,16 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fund Allocations</h1>
+          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Fund Allocations</h1>
           <p className="text-muted-foreground">Manage fund portfolios and AUM values</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleAddFund}>
-            <Plus className="size-4 mr-2" />
+          <Button onClick={handleAddFund} className="text-base sm:text-sm cursor-pointer">
+            <Plus className="size-5 sm:size-4 mr-2" />
             Add Fund
           </Button>
-          <Button variant="outline" className="cursor-pointer" onClick={() => operateData(Operation.Read, "funds")}>
-            <Download className="size-4 mr-2" />
+          <Button variant="outline" className="text-base sm:text-sm cursor-pointer" onClick={() => operateData(Operation.Read, "funds")}>
+            <Download className="size-5 sm:size-4 mr-2" />
             Export Data
           </Button>
         </div>
@@ -248,16 +237,16 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Funds</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total Funds</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredFunds.length}</div>
-            <p className="text-xs text-muted-foreground">Managed funds</p>
+            <div className="text-3xl sm:text-2xl font-bold">{filteredFunds.length}</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Managed funds</p>
           </CardContent>
         </Card>
         {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Funds</CardTitle>
+            <CardTitle className="text-sm sm:text-xs font-medium">Active Funds</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeFunds}</div>
@@ -266,11 +255,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
         </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total AUM</CardTitle>
+            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total AUM</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalAUM)}</div>
-            <p className="text-xs text-muted-foreground">Assets under management</p>
+            <div className="text-3xl sm:text-2xl font-bold">{formatCurrency(totalAUM)}</div>
+            <p className="text-sm sm:text-xs text-muted-foreground">Assets under management</p>
           </CardContent>
         </Card>
       </div>
@@ -279,8 +268,8 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Fund Portfolio</CardTitle>
-              <CardDescription>View and manage all fund allocations and AUM values</CardDescription>
+              <CardTitle className="text-xl sm:text-lg">Fund Portfolio</CardTitle>
+              <CardDescription className="text-base sm:text-sm">View and manage all fund allocations and AUM values</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -308,7 +297,7 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="text-base sm:text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Fund Name</TableHead>
