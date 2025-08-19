@@ -156,18 +156,18 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
     return (
       <div className="space-y-6 p-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={returnWarehouse} className="text-base sm:text-sm cursor-pointer">
-            <ArrowLeft className="size-5 sm:size-4" />
+          <Button variant="outline" onClick={returnWarehouse} className="2xl:text-base sm:text-sm cursor-pointer">
+            <ArrowLeft className="2xl:size-5 sm:size-4" />
             Back to Invoice Warehouse
           </Button>
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Allocation Table</h1>
+            <h1 className="2xl:text-3xl sm:text-2xl font-bold tracking-tight">Allocation Table</h1>
             <p className="text-muted-foreground">Detailed fund allocations for {selectedInvoice.invoiceNumber}</p>
           </div>
-          <Button className="text-base sm:text-sm cursor-pointer">
-            <Download className="size-5 sm:size-4 mr-1" />
+          <Button className="2xl:text-base sm:text-sm cursor-pointer">
+            <Download className="2xl:size-5 sm:size-4 mr-1" />
             Export Allocations
           </Button>
         </div>
@@ -175,49 +175,49 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Invoice Total</CardTitle>
+              <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Invoice Total</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl sm:text-xl font-bold">{formatCurrency(selectedInvoice.invoiceTotal)}</div>
-              <p className="text-sm sm:text-xs text-muted-foreground">Total invoice amount</p>
+              <div className="2xl:text-3xl sm:text-xl font-bold">{formatCurrency(selectedInvoice.invoiceTotal)}</div>
+              <p className="2xl:text-sm sm:text-xs text-muted-foreground">Total invoice amount</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Company</CardTitle>
+              <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Company</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl sm:text-xl font-bold">{selectedInvoice.companyName}</div>
-              <p className="text-sm sm:text-xs text-muted-foreground">Invoice issuer</p>
+              <div className="2xl:text-3xl sm:text-xl font-bold">{selectedInvoice.companyName}</div>
+              <p className="2xl:text-sm sm:text-xs text-muted-foreground">Invoice issuer</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Received Date</CardTitle>
+              <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Received Date</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl sm:text-xl font-bold">{new Date(selectedInvoice.receivedDate).toLocaleDateString()}</div>
-              <p className="text-sm sm:text-xs text-muted-foreground">Date received</p>
+              <div className="2xl:text-3xl sm:text-xl font-bold">{new Date(selectedInvoice.receivedDate).toLocaleDateString()}</div>
+              <p className="2xl:text-sm sm:text-xs text-muted-foreground">Date received</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base sm:text-sm font-medium -mb-1">Due Date</CardTitle>
+              <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Due Date</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl sm:text-xl font-bold">{new Date(selectedInvoice.dueDate).toLocaleDateString()}</div>
-              <p className="text-sm sm:text-xs text-muted-foreground">Payment due</p>
+              <div className="2xl:text-3xl sm:text-xl font-bold">{new Date(selectedInvoice.dueDate).toLocaleDateString()}</div>
+              <p className="2xl:text-sm sm:text-xs text-muted-foreground">Payment due</p>
             </CardContent>
           </Card>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl sm:text-lg -mb-1">Fund Allocations</CardTitle>
-            <CardDescription className="text-base sm:text-sm">Breakdown of allocations across all funds</CardDescription>
+            <CardTitle className="2xl:text-xl sm:text-lg -mb-1">Fund Allocations</CardTitle>
+            <CardDescription className="2xl:text-base sm:text-sm">Breakdown of allocations across all funds</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table className="text-base sm:text-sm">
+            <Table className="2xl:text-base sm:text-sm">
               <TableHeader>
                 <TableRow>
                   <TableHead>Fund</TableHead>
@@ -240,7 +240,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                             style={{ width: `${Math.min(fund.percentage, 100)}%` }}
                           ></div>
                         </div>
-                        <span className="text-base sm:text-sm">{fund.percentage.toFixed(3)}%</span>
+                        <span className="2xl:text-base sm:text-sm">{fund.percentage.toFixed(3)}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{formatCurrency(fund.amountAllocated)}</TableCell>
@@ -271,11 +271,11 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Invoice Warehouse</h1>
+          <h1 className="2xl:text-3xl sm:text-2xl font-bold tracking-tight">Invoice Warehouse</h1>
           <p className="text-muted-foreground">Manage and track invoices across the warehouse</p>
         </div>
-        <Button className="text-base sm:text-sm">
-          <Download className="size-5 sm:size-4 mr-1" />
+        <Button className="2xl:text-base sm:text-sm">
+          <Download className="2xl:size-5 sm:size-4 mr-1" />
           Export Data
         </Button>
       </div>
@@ -283,29 +283,29 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total Invoices</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Total Invoices</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">{filteredInvoices.length}</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Active invoices</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">{filteredInvoices.length}</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Active invoices</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total AUM</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Total AUM</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">$4.123B</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Assets under management</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">$4.123B</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Assets under management</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Invoice Total</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Invoice Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">${totalInvoiceAmount.toLocaleString()}</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Total invoice amount</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">${totalInvoiceAmount.toLocaleString()}</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Total invoice amount</p>
           </CardContent>
         </Card>
       </div>
@@ -314,8 +314,8 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl sm:text-lg">Invoice Warehouse</CardTitle>
-              <CardDescription className="text-base sm:text-sm">View and manage all invoices in the warehouse</CardDescription>
+              <CardTitle className="2xl:text-xl sm:text-lg">Invoice Warehouse</CardTitle>
+              <CardDescription className="2xl:text-base sm:text-sm">View and manage all invoices in the warehouse</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -344,7 +344,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
           </div>
         </CardHeader>
         <CardContent>
-          <Table className="text-base sm:text-sm">
+          <Table className="2xl:text-base sm:text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Invoice Number</TableHead>
@@ -370,7 +370,7 @@ export function Warehouse({ invoices: propInvoices, onInvoiceUpdate }: Warehouse
                   <TableCell className="text-center">
                     <div className="flex items-center justify-start gap-2">
                       <Button variant="ghost" size="sm" onClick={() => handleViewInvoice(invoice)}>
-                        <Eye className="size-4" />
+                        <Eye className="2xl:size-4.5 size-4" />
                       </Button>
                       {invoice.status === "Pending Approval" && (
                         <Dialog open={approvalDialogOpen} onOpenChange={setApprovalDialogOpen}>

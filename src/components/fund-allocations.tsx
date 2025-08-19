@@ -219,16 +219,16 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Fund Allocations</h1>
+          <h1 className="2xl:text-3xl sm:text-2xl font-bold tracking-tight">Fund Allocations</h1>
           <p className="text-muted-foreground">Manage fund portfolios and AUM values</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleAddFund} className="text-base sm:text-sm cursor-pointer">
-            <Plus className="size-5 sm:size-4 mr-2" />
+            <Plus className="2xl:size-5 sm:size-4 mr-2" />
             Add Fund
           </Button>
-          <Button variant="outline" className="text-base sm:text-sm cursor-pointer" onClick={() => operateData(Operation.Read, "funds")}>
-            <Download className="size-5 sm:size-4 mr-2" />
+          <Button variant="outline" className="2xl:text-base sm:text-sm cursor-pointer" onClick={() => operateData(Operation.Read, "funds")}>
+            <Download className="2xl:size-5 sm:size-4 mr-2" />
             Export Data
           </Button>
         </div>
@@ -237,11 +237,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total Funds</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Total Funds</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">{filteredFunds.length}</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Managed funds</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">{filteredFunds.length}</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Managed funds</p>
           </CardContent>
         </Card>
         {/* <Card>
@@ -255,11 +255,11 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
         </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total AUM</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Total AUM</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">{formatCurrency(totalAUM)}</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Assets under management</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">{formatCurrency(totalAUM)}</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Assets under management</p>
           </CardContent>
         </Card>
       </div>
@@ -268,8 +268,8 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl sm:text-lg">Fund Portfolio</CardTitle>
-              <CardDescription className="text-base sm:text-sm">View and manage all fund allocations and AUM values</CardDescription>
+              <CardTitle className="2xl:text-xl sm:text-lg">Fund Portfolio</CardTitle>
+              <CardDescription className="2xl:text-base sm:text-sm">View and manage all fund allocations and AUM values</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -297,7 +297,7 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Table className="text-base sm:text-sm">
+          <Table className="2xl:text-base sm:text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Fund Name</TableHead>
@@ -319,7 +319,7 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
                       <Button variant="ghost" size="sm" onClick={() => handleEditFund(fund)}>
-                        <Edit className="size-4" />
+                        <Edit className="2xl:size-4.5 size-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -327,7 +327,7 @@ export function FundAllocations({ onFundsUpdate }: FundAllocationsProps) {
                         onClick={() => handleDeleteFund(fund)}
                         className="text-red-600 hover:text-red-700"
                       >
-                        <Trash2 className="size-4" />
+                        <Trash2 className="2xl:size-4.5 size-4" />
                       </Button>
                     </div>
                   </TableCell>

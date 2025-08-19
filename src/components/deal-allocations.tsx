@@ -218,16 +218,16 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">Deal Allocations</h1>
+          <h1 className="2xl:text-3xl sm:text-2xl font-bold tracking-tight">Deal Allocations</h1>
           <p className="text-muted-foreground">Manage investment deals and allocations</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="cursor-pointer text-base sm:text-sm" onClick={handleAddDeal}>
-            <Plus className="size-5 sm:size-4 mr-2" />
+          <Button className="cursor-pointer 2xl:text-base sm:text-sm" onClick={handleAddDeal}>
+            <Plus className="2xl:size-5 sm:size-4 mr-2" />
             Add Deal
           </Button>
-          <Button className="cursor-pointer text-base sm:text-sm" variant="outline">
-            <Download className="size-5 sm:size-4 mr-2" />
+          <Button className="cursor-pointer 2xl:text-base sm:text-sm" variant="outline">
+            <Download className="2xl:size-5 sm:size-4 mr-2" />
             Export Data
           </Button>
         </div>
@@ -236,11 +236,11 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Total Deals</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Total Deals</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">{filteredDeals.length}</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Managed deals</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">{filteredDeals.length}</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Managed deals</p>
           </CardContent>
         </Card>
         {/* <Card>
@@ -254,11 +254,11 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
         </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base sm:text-sm font-medium -mb-1">Deals Total Amount</CardTitle>
+            <CardTitle className="2xl:text-base sm:text-sm font-medium -mb-1">Deals Total Amount</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl sm:text-2xl font-bold">{formatCurrency(totalAUM)}</div>
-            <p className="text-sm sm:text-xs text-muted-foreground">Total amount managed through deals</p>
+            <div className="2xl:text-3xl sm:text-2xl font-bold">{formatCurrency(totalAUM)}</div>
+            <p className="2xl:text-sm sm:text-xs text-muted-foreground">Total amount managed through deals</p>
           </CardContent>
         </Card>
       </div>
@@ -267,8 +267,8 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Deal Portfolio</CardTitle>
-              <CardDescription className="text-base sm:text-sm">View and manage all investment deals and allocations</CardDescription>
+              <CardTitle className="2xl:text-xl sm:text-lg">Deal Portfolio</CardTitle>
+              <CardDescription className="2xl:text-base sm:text-sm">View and manage all investment deals and allocations</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -296,7 +296,7 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Table className="text-base sm:text-sm">
+          <Table className="2xl:text-base sm:text-sm">
             <TableHeader>
               <TableRow>
                 <TableHead>Deal Name</TableHead>
@@ -314,11 +314,11 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
                   <TableCell className="font-medium">{formatCurrency(deal.amount)}</TableCell>
                   <TableCell>{deal.manager}</TableCell>
                   <TableCell>{dealStatusBadge(deal.status)}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-sm sm:text-xs">{deal.funds.length} Fund{deal.funds.length > 1 ? "s" : ""}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="2xl:text-sm sm:text-xs">{deal.funds.length} Fund{deal.funds.length > 1 ? "s" : ""}</Badge></TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
                       <Button className="cursor-pointer" variant="ghost" size="sm">
-                        <Edit className="size-4" />
+                        <Edit className="2xl:size-4.5 size-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -326,7 +326,7 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
                         // onClick={() => deleteFund(fund)}
                         className="text-red-600 hover:text-red-700 cursor-pointer"
                       >
-                        <Trash2 className="size-4" />
+                        <Trash2 className="2xl:size-4.5 size-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -411,7 +411,7 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
             </Button>
             {/* <Button className="cursor-pointer" onClick={handleSaveFund}> */}
             <Button className="cursor-pointer">
-              <Save className="size-4 mr-2" />
+              <Save className="2xl:size-4.5 size-4 mr-2" />
               Save Changes
             </Button>
           </DialogFooter>
@@ -493,7 +493,7 @@ export function DealAllocations({ onFundsUpdate }: FundAllocationsProps) {
             {/* <Button className="cursor-pointer" onClick={handleSaveFund}> */}
             <Button className="cursor-pointer">
               <Plus className="size-4 mr-2" />
-              Add Fund
+              Add Deal
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -294,13 +294,13 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
   }
 
   return (
-    <div className="space-y-6 p-6 text-lg">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl sm:text-2xl font-bold tracking-tight">New Invoice</h1>
+          <h1 className="2xl:text-3xl sm:text-2xl font-bold tracking-tight">New Invoice</h1>
           <p className="text-muted-foreground">Upload an invoice file or enter details manually</p>
         </div>
-        <Badge variant="secondary" className="text-sm sm:text-xs">
+        <Badge variant="secondary" className="2xl:text-sm sm:text-xs">
           Draft
         </Badge>
       </div>
@@ -320,12 +320,12 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-fit">
-          <TabsTrigger value="manual" className="flex items-center gap-2 text-base sm:text-sm">
-            <FileText className="size-5 sm:size-4" />
+          <TabsTrigger value="manual" className="flex items-center gap-2 2xl:text-base sm:text-sm">
+            <FileText className="2xl:size-5 sm:size-4" />
             Manual Input
           </TabsTrigger>
-          <TabsTrigger value="upload" className="flex items-center gap-2 text-base sm:text-sm">
-            <Upload className="size-5 sm:size-4" />
+          <TabsTrigger value="upload" className="flex items-center gap-2 2xl:text-base sm:text-sm">
+            <Upload className="2xl:size-5 sm:size-4" />
             Invoice File Upload
           </TabsTrigger>
         </TabsList>
@@ -334,34 +334,34 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
           <Card>
             <CardHeader>
               <div>
-                <CardTitle className="text-xl sm:text-lg">Invoice Information</CardTitle>
-                <CardDescription className="text-base sm:text-sm">Enter the essential invoice details manually</CardDescription>
+                <CardTitle className="2xl:text-xl sm:text-lg">Invoice Information</CardTitle>
+                <CardDescription className="2xl:text-base sm:text-sm">Enter the essential invoice details manually</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="manual-invoice" className="text-base sm:text-sm">Invoice Number</Label>
+                  <Label htmlFor="manual-invoice" className="2xl:text-base sm:text-sm">Invoice Number</Label>
                   <Input
                     id="manual-invoice"
                     value={invoiceData.invoiceNumber}
                     onChange={(e) => handleInputChange("invoiceNumber", e.target.value)}
                     placeholder="Enter invoice number"
-                    className="sm:text-sm"
+                    className="2xl:text-base sm:text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="manual-company" className="text-base sm:text-sm">Company Name</Label>
+                  <Label htmlFor="manual-company" className="2xl:text-base sm:text-sm">Company Name</Label>
                   <Input
                     id="manual-company"
                     value={invoiceData.companyName}
                     onChange={(e) => handleInputChange("companyName", e.target.value)}
                     placeholder="Enter company name"
-                    className="sm:text-sm"
+                    className="2xl:text-base sm:text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="manual-total" className="text-base sm:text-sm">Total Amount</Label>
+                  <Label htmlFor="manual-total" className="2xl:text-base sm:text-sm">Total Amount</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground sm:text-sm">$</span>
                     <Input
@@ -369,12 +369,12 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                       value={invoiceData.totalAmount}
                       onChange={(e) => handleCurrencyChange(e.target.value)}
                       placeholder="0.00"
-                      className="pl-8 sm:text-sm"
+                      className="pl-8 2xl:text-base sm:text-sm"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-base sm:text-sm">Received Date</Label>
+                  <Label className="2xl:text-base sm:text-sm">Received Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -385,7 +385,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                         )}
                       >
                         <CalendarIcon className="mr-2 size-4" />
-                        <span className="text-base sm:text-sm">{receivedDate ? format(receivedDate, "PPP") : "Select Date"}</span>
+                        <span className="2xl:text-base sm:text-sm">{receivedDate ? format(receivedDate, "PPP") : "Select Date"}</span>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -431,7 +431,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                   </Popover>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-base sm:text-sm">Due Date</Label>
+                  <Label className="2xl:text-base sm:text-sm">Due Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -442,7 +442,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                         )}
                       >
                         <CalendarIcon className="mr-2 size-4" />
-                        <span className="text-base sm:text-sm">{dueDate ? format(dueDate, "PPP") : "Select Date"}</span>
+                        <span className="2xl:text-base sm:text-sm">{dueDate ? format(dueDate, "PPP") : "Select Date"}</span>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -457,9 +457,9 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                   </Popover>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-base sm:text-sm">Activity Type</Label>
+                  <Label className="2xl:text-base sm:text-sm">Activity Type</Label>
                   <Select value={invoiceData.activityType !== ActivityType.Pending ? invoiceData.activityType : undefined} onValueChange={(value) => setInvoiceActivity(value as ActivityType)}>
-                    <SelectTrigger className="w-full text-base sm:text-sm">
+                    <SelectTrigger className="w-full 2xl:text-base sm:text-sm">
                       <SelectValue placeholder="Select activity type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -473,9 +473,9 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                   </Select>
                 </div>
                 {invoiceData.activityType === ActivityType.DealAlloc && (<div className="space-y-2">
-                  <Label className="text-base sm:text-sm">Deal Involved</Label>
+                  <Label className="2xl:text-base sm:text-sm">Deal Involved</Label>
                   <Select value={invoiceData.dealId} onValueChange={setInvoiceDeal}>
-                    <SelectTrigger className="w-full text-base sm:text-sm">
+                    <SelectTrigger className="w-full 2xl:text-base sm:text-sm">
                       <SelectValue placeholder="Select deal" />
                     </SelectTrigger>
                     <SelectContent>
@@ -497,9 +497,9 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
               <Save className="size-4 mr-2" />
               Save Draft
             </Button> */}
-            <Button onClick={handleSubmit} className="cursor-pointer text-base sm:text-sm">
+            <Button onClick={handleSubmit} className="cursor-pointer 2xl:text-base sm:text-sm">
               {/* <Send className="size-4 mr-2" /> */}
-              <Save className="size-5 sm:size-4 mr-2" />
+              <Save className="2xl:size-5 sm:size-4 mr-2" />
               Save Invoice
             </Button>
           </div>
@@ -591,6 +591,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                       value={invoiceData.invoiceNumber}
                       onChange={(e) => handleInputChange("invoiceNumber", e.target.value)}
                       placeholder="Enter invoice number"
+                      className="2xl:text-base sm:text-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -600,12 +601,13 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                       value={invoiceData.companyName}
                       onChange={(e) => handleInputChange("companyName", e.target.value)}
                       placeholder="Enter company name"
+                      className="2xl:text-base sm:text-sm"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="extracted-total">Total Amount</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 2xl:text-base sm:text-sm text-muted-foreground">
                         $
                       </span>
                       <Input
@@ -613,7 +615,7 @@ export function NewInvoice({ createInvoice, existingInvoices = [] }: NewInvoiceP
                         value={invoiceData.totalAmount}
                         onChange={(e) => handleCurrencyChange(e.target.value)}
                         placeholder="0.00"
-                        className="pl-8"
+                        className="pl-8 2xl:text-base sm:text-sm"
                       />
                     </div>
                   </div>
